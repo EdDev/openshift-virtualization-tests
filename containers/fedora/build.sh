@@ -35,6 +35,10 @@ else
     exit 1
 fi
 
+if [ $FULL_EMULATION = "true" ]; then
+    VIRT_TYPE="qemu"
+fi
+
 mkdir $BUILD_DIR
 
 FEDORA_PASSWORD=$(uv run get_fedora_password.py)

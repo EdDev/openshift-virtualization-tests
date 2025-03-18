@@ -1,0 +1,33 @@
+name: "Component Builder"
+on:
+  pull_request_target:
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  guest-fedora-amd64:
+    runs-on: ubuntu-latest
+    env:
+      FEDORA_IMAGE: Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
+      FEDORA_VERSION: 41
+      CPU_ARCH: amd64
+      FULL_EMULATION: "true"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Install dependencies for VM build
+        run: |
+          sudo apt update
+          export DEBIAN_FRONTEND=noninteractive
+          apt install -y qemu-system-x86 libvirt-daemon-system virtinst
+      - name: Start libvirt
+        run: sudo /usr/sbin/libvirtd -d
+      - name: Fetch base Fedora image
+        working-directory: ./containers/fedora
+        run: wget https://download.fedoraproject.org/pub/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
+      - name: Create VM
+        working-directory: ./containers/fedora
+        run: ./build.sh
+      - name: Report results
+        run: ls -la
