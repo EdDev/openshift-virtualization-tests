@@ -1,5 +1,6 @@
 name: "Component Builder"
 on:
+  pull_request:
   pull_request_target:
 
   # Allows you to run this workflow manually from the Actions tab
@@ -15,6 +16,18 @@ jobs:
       FULL_EMULATION: "true"
       DEBIAN_FRONTEND: noninteractive
     steps:
+      - name: check nest virt
+        run: |
+          is_nested_virt_enabled() {
+            local kvm_nested="unknown"
+            if [ -f "/sys/module/kvm_intel/parameters/nested" ]; then
+               kvm_nested=$( cat /sys/module/kvm_intel/parameters/nested )
+            elif [ -f "/sys/module/kvm_amd/parameters/nested" ]; then
+              kvm_nested=$( cat /sys/module/kvm_amd/parameters/nested )
+            fi
+            [ "$kvm_nested" == "1" ] || [ "$kvm_nested" == "Y" ] || [ "$kvm_nested" == "y" ]
+          }
+          is_nested_virt_enabled
       - name: Check out code
         uses: actions/checkout@v4
       - name: Install dependencies for VM build
